@@ -1,0 +1,4 @@
+mongodb:
+  mongodb_conn: mongodb://root:123@localhost:49153
+  mongodb_db: test
+  files_collection: files
