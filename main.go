@@ -27,21 +27,20 @@ func main() {
 	cfg := config.AppConfig
 
 	clears := []func(){}
-	setClear := func(f func()) {
-		clears = append(clears, f)
-	}
-	clear := func() {
+	defer func() {
 		for _, f := range clears {
 			f()
 		}
-	}
+		logs.Info("server exits.")
+	}()
 
-	if err := startMongoService(&cfg.Mongodb, setClear); err != nil {
-		clear()
+	f, err := startMongoService(&cfg.Mongodb)
+	if err != nil {
 		fatal(err)
 	}
+	clears = append(clears, f)
 
-	run(clear)
+	run()
 }
 
 func fatal(err error) {
@@ -49,30 +48,26 @@ func fatal(err error) {
 	os.Exit(1)
 }
 
-func startMongoService(cfg *config.MongodbConfig, setClear func(func())) error {
+func startMongoService(cfg *config.MongodbConfig) (func(), error) {
 	c, err := mongodb.Initialize(cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	dbmodels.RegisterDB(c)
 
-	setClear(func() {
+	return func() {
 		logs.Info("closing mongodb ...")
 		if err := dbmodels.GetDB().Close(); err != nil {
 			logs.Error(err)
 		}
-	})
-	return nil
+	}, nil
 }
 
-func run(clear func()) {
+func run() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	interrupts.OnInterrupt(func() {
 		shutdown()
-		if clear != nil {
-			clear()
-		}
 	})
 
 	beego.Run()
