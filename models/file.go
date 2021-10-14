@@ -8,11 +8,12 @@ import (
 	"github.com/opensourceways/repo-file-cache/dbmodels"
 )
 
+type File = dbmodels.File
 type Branch = dbmodels.Branch
 
 type FilesInfo struct {
-	BranchSHA string          `json:"branch_sha" required:"true"`
-	Files     []dbmodels.File `json:"files" required:"true"`
+	BranchSHA string `json:"branch_sha" required:"true"`
+	Files     []File `json:"files" required:"true"`
 }
 
 func (f FilesInfo) validate() IModelError {
@@ -75,8 +76,15 @@ func (f FileUpdateOption) Update() IModelError {
 	return parseDBError(err)
 }
 
-func GetFiles(b Branch, fileName string) (FilesInfo, IModelError) {
-	sha, r, err := dbmodels.GetDB().GetFiles(&b, fileName)
+func GetFiles(b Branch, fileName string, summary bool) (FilesInfo, IModelError) {
+	var sha string
+	var r []File
+	var err dbmodels.IDBError
+	if summary {
+		r, err = dbmodels.GetDB().GetFileSummary(&b, fileName)
+	} else {
+		sha, r, err = dbmodels.GetDB().GetFiles(&b, fileName)
+	}
 	if err == nil {
 		return FilesInfo{sha, r}, nil
 	}

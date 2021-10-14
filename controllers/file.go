@@ -52,7 +52,7 @@ func (fc *FileController) Set() {
 // @Failure 500 system_error:               system error
 // @router /:platform/:org/:repo/:branch/:filename [get]
 func (fc *FileController) Get() {
-	action := "list links"
+	action := "list files"
 
 	b := models.Branch{
 		Platform: fc.GetString(":platform"),
@@ -61,7 +61,9 @@ func (fc *FileController) Get() {
 		Branch:   fc.GetString(":branch"),
 	}
 
-	r, merr := models.GetFiles(b, fc.GetString(":filename"))
+	summary, _ := fc.GetBool("summary")
+
+	r, merr := models.GetFiles(b, fc.GetString(":filename"), summary)
 	if merr != nil {
 		fc.sendModelErrorAsResp(merr, action)
 		return

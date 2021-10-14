@@ -27,11 +27,11 @@ func dirToKey(s string) (string, dbmodels.IDBError) {
 	return fieldFilesItem + s, nil
 }
 
-func keyToDir(s string) string {
-	if s == dbmodels.FilePathSeparator {
-		return ""
+func fullPathOfFile(p, name string) string {
+	if p == dbmodels.FilePathSeparator {
+		return name
 	}
-	return s
+	return filepath.Join(p, name)
 }
 
 func docFilterOfFiles(b *dbmodels.Branch, fileName string) bson.M {
@@ -105,10 +105,65 @@ func (cl *client) GetFiles(branch *dbmodels.Branch, fileName string) (string, []
 	r := make([]dbmodels.File, 0, len(v.Files))
 	for key, info := range v.Files {
 		r = append(r, dbmodels.File{
-			Path:    filepath.Join(keyToDir(key), fileName),
+			Path:    fullPathOfFile(key, fileName),
 			SHA:     info.SHA,
 			Content: info.Content,
 		})
 	}
 	return v.BranchSHA, r, nil
+}
+
+func (cl *client) GetFileSummary(branch *dbmodels.Branch, fileName string) ([]dbmodels.File, dbmodels.IDBError) {
+	pipeline := bson.A{
+		bson.M{"$match": docFilterOfFiles(branch, fileName)},
+		bson.M{"$project": bson.M{
+			fieldFiles: bson.M{
+				"$objectToArray": fieldFilesRef,
+			},
+		}},
+		bson.M{"$project": bson.M{
+			fieldFilesVal: 0,
+		}},
+		bson.M{"$project": bson.M{
+			fieldFiles: bson.M{
+				"$arrayToObject": fieldFilesRef,
+			},
+		}},
+	}
+
+	var v []dFiles
+	f := func(ctx context.Context) error {
+		col := cl.collection(cl.filesCollection)
+		cursor, err := col.Aggregate(ctx, pipeline)
+		if err != nil {
+			return err
+		}
+
+		return cursor.All(ctx, &v)
+	}
+
+	var err dbmodels.IDBError
+	withContext(func(ctx context.Context) {
+		if e := f(ctx); e != nil {
+			err = newSystemError(e)
+		}
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(v) == 0 {
+		return nil, nil
+	}
+
+	files := v[0].Files
+	r := make([]dbmodels.File, 0, len(files))
+	for key, info := range files {
+		r = append(r, dbmodels.File{
+			Path: fullPathOfFile(key, fileName),
+			SHA:  info.SHA,
+		})
+	}
+	return r, nil
 }

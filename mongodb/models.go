@@ -5,6 +5,8 @@ const (
 	fieldName      = "name"
 	fieldFiles     = "files"
 	fieldFilesItem = "files."
+	fieldFilesRef  = "$files"
+	fieldFilesVal  = "files.v.v"
 	fieldSHA       = "sha"
 	fieldKey       = "k"
 	fieldValue     = "v"

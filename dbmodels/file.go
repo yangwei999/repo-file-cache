@@ -50,7 +50,7 @@ func (f File) Name() string {
 }
 
 func (f File) Dir() string {
-	s := strings.TrimRight(f.Path, FilePathSeparator)
+	s := strings.Trim(f.Path, FilePathSeparator)
 	return filepath.Dir(s)
 }
 
