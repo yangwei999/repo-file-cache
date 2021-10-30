@@ -10,6 +10,7 @@ import (
 
 type File = dbmodels.File
 type Branch = dbmodels.Branch
+type FilePath = dbmodels.FilePath
 
 type FilesInfo struct {
 	BranchSHA string `json:"branch_sha" required:"true"`
@@ -94,4 +95,31 @@ func GetFiles(b Branch, fileName string, summary bool) (FilesInfo, IModelError) 
 	}
 
 	return FilesInfo{}, parseDBError(err)
+}
+
+type FileDeleteOption struct {
+	Files []FilePath `json:"files" required:"true"`
+}
+
+func (f FileDeleteOption) Validate(fileName string) IModelError {
+	if len(f.Files) == 0 {
+		return newMissingParam("files")
+	}
+
+	for _, item := range f.Files {
+		if fileName != item.Name() {
+			return ErrNotSameFile.toModelError()
+		}
+	}
+
+	return nil
+}
+
+func (f FileDeleteOption) DeleteFiles(b Branch) IModelError {
+	err := dbmodels.GetDB().DeleteFiles(&b, f.Files)
+	if err == nil || err.IsErrorOf(dbmodels.ErrNoDBRecord) {
+		return nil
+	}
+
+	return parseDBError(err)
 }

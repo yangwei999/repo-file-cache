@@ -14,7 +14,7 @@ func (fc *FileController) Prepare() {
 
 // @Title Set
 // @Description store the file
-// @Param	body		body 	models.FileUpdateOption	true		"body for storing file"
+// @Param	body	body 	models.FileUpdateOption		true	"body for storing file"
 // @Success 201 {string} "successfully"
 // @Failure 400 error_parsing_api_body:     parse payload of request failed
 // @Failure 401 error_missing_input_param:  missing some input parameters
@@ -70,4 +70,43 @@ func (fc *FileController) Get() {
 	}
 
 	fc.sendSuccessResp(r)
+}
+
+// @Title Delete
+// @Description Delete the stored files
+// @Param	body	body 	models.FileDeleteOption		true	"body for deleting files"
+// @Success 204 {string} "successfully"
+// @Failure 400 missing_url_path_parameter: missing url path parameter
+// @Failure 401 error_parsing_api_body:     parse payload of request failed
+// @Failure 402 error_missing_input_param:  missing some input parameters
+// @Failure 403 error_not_same_file:        the name of files to be stored is not same
+// @Failure 500 system_error:               system error
+// @router /:platform/:org/:repo/:branch/:filename [delete]
+func (fc *FileController) Delete() {
+	action := "delete files"
+
+	input := &models.FileDeleteOption{}
+	if fr := fc.fetchInputPayload(input); fr != nil {
+		fc.sendFailedResultAsResp(fr, action)
+		return
+	}
+
+	if merr := input.Validate(fc.GetString(":filename")); merr != nil {
+		fc.sendModelErrorAsResp(merr, action)
+		return
+	}
+
+	b := models.Branch{
+		Platform: fc.GetString(":platform"),
+		Org:      fc.GetString(":org"),
+		Repo:     fc.GetString(":repo"),
+		Branch:   fc.GetString(":branch"),
+	}
+
+	if merr := input.DeleteFiles(b); merr != nil {
+		fc.sendModelErrorAsResp(merr, action)
+		return
+	}
+
+	fc.sendSuccessResp(action + "successfully")
 }

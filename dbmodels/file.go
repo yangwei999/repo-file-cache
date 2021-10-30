@@ -2,7 +2,6 @@ package dbmodels
 
 import (
 	"path/filepath"
-	"strings"
 )
 
 const (
@@ -38,20 +37,19 @@ func (b Branch) IsMissingParam() (string, bool) {
 }
 
 type File struct {
-	Path string `json:"path" required:"true"`
-	SHA  string `json:"sha" required:"true"`
+	Path FilePath `json:"path" required:"true"`
+	SHA  string   `json:"sha" required:"true"`
 
 	// Allow empty file
 	Content string `json:"content,omitempty"`
 }
 
 func (f File) Name() string {
-	return filepath.Base(f.Path)
+	return f.Path.Name()
 }
 
 func (f File) Dir() string {
-	s := strings.Trim(f.Path, FilePathSeparator)
-	return filepath.Dir(s)
+	return f.Path.Dir()
 }
 
 func (f *File) IsMissingParam() (string, bool) {
@@ -69,4 +67,14 @@ func (f *File) IsMissingParam() (string, bool) {
 		return "sha", v
 	}
 	return "", false
+}
+
+type FilePath string
+
+func (f FilePath) Name() string {
+	return filepath.Base(string(f))
+}
+
+func (f FilePath) Dir() string {
+	return filepath.Dir(filepath.Clean(string(f)))
 }

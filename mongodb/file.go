@@ -82,6 +82,32 @@ func (cl *client) UpdateFiles(branch *dbmodels.Branch, branchSHA string, files [
 	return err
 }
 
+func (cl *client) DeleteFiles(branch *dbmodels.Branch, files []dbmodels.FilePath) dbmodels.IDBError {
+	if len(files) == 0 {
+		return nil
+	}
+
+	fields := make([]string, 0, len(files))
+	for _, f := range files {
+		if key, err := dirToKey(f.Dir()); err == nil {
+			fields = append(fields, key)
+		}
+	}
+
+	if len(fields) == 0 {
+		return nil
+	}
+
+	var err dbmodels.IDBError
+
+	withContext(func(ctx context.Context) {
+		docFilter := docFilterOfFiles(branch, files[0].Name())
+		err = cl.deleteFields(ctx, cl.filesCollection, docFilter, fields)
+	})
+
+	return err
+}
+
 func (cl *client) GetFiles(branch *dbmodels.Branch, fileName string) (string, []dbmodels.File, dbmodels.IDBError) {
 	var v dFiles
 	var err dbmodels.IDBError
@@ -105,7 +131,7 @@ func (cl *client) GetFiles(branch *dbmodels.Branch, fileName string) (string, []
 	r := make([]dbmodels.File, 0, len(v.Files))
 	for key, info := range v.Files {
 		r = append(r, dbmodels.File{
-			Path:    fullPathOfFile(key, fileName),
+			Path:    dbmodels.FilePath(fullPathOfFile(key, fileName)),
 			SHA:     info.SHA,
 			Content: info.Content,
 		})
@@ -161,7 +187,7 @@ func (cl *client) GetFileSummary(branch *dbmodels.Branch, fileName string) ([]db
 	r := make([]dbmodels.File, 0, len(files))
 	for key, info := range files {
 		r = append(r, dbmodels.File{
-			Path: fullPathOfFile(key, fileName),
+			Path: dbmodels.FilePath(fullPathOfFile(key, fileName)),
 			SHA:  info.SHA,
 		})
 	}

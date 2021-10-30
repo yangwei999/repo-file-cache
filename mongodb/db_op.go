@@ -58,3 +58,22 @@ func (cl *client) getDoc(ctx context.Context, collection string, filterOfDoc, pr
 	}
 	return nil
 }
+
+func (cl *client) deleteFields(ctx context.Context, collection string, filterOfDoc bson.M, fields []string) dbmodels.IDBError {
+	items := bson.M{}
+	for _, item := range fields {
+		items[item] = ""
+	}
+
+	r, err := cl.collection(collection).UpdateOne(
+		ctx, filterOfDoc, bson.M{"$unset": items},
+	)
+	if err != nil {
+		return newSystemError(err)
+	}
+
+	if r.MatchedCount == 0 {
+		return errNoDBRecord
+	}
+	return nil
+}
