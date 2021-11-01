@@ -1,4 +1,4 @@
 mongodb:
-  mongodb_conn: mongodb://root:123@localhost:49153
-  mongodb_db: test
+  mongodb_conn: "${MONGODB_CONNECTION}"
+  mongodb_db: "${MONGODB_NAME}"
   files_collection: files
