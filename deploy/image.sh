@@ -8,16 +8,22 @@ work_dir=$(pwd)
 cd $(dirname $0)
 
 branch=$(git rev-parse --abbrev-ref HEAD)
+branch=${BRANCH_OVERRIDE:-$branch}
+
 commit_id=$(git describe --tags --always --dirty)
-image_tag="${branch}-${commit_id}"
+commit_id=${COMMIT_ID_OVERRIDE:-$commit_id}
+
 repository=$(git remote -v | tail -1 | awk -F '/' '{print $NF}' | awk -F '.' '{print $1}')
 if [ -z "$repository" ]; then
     repository=$(pwd | xargs dirname | xargs basename)
 fi
+repository=${REPOSITORY_OVERRIDE:-$repository}
+
+image_tag="${branch}-${commit_id}"
+image_tag=${IMAGE_TAG_OVERRIDE:-$image_tag}
 
 image_registry=${IMAGE_REGISTRY_OVERRIDE:-swr.cn-north-4.myhuaweicloud.com}
 image_repo=${IMAGE_REPO_OVERRIDE:-opensourceway/robot/$repository}
-image_tag=${IMAGE_TAG_OVERRIDE:-$image_tag}
 
 cat <<EOF
 IMAGE_REGISTRY ${image_registry}
