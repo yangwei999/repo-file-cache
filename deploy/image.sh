@@ -7,7 +7,7 @@ set -o pipefail
 work_dir=$(pwd)
 cd $(dirname $0)
 
-branch=$(git symbolic-ref --short HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD)
 commit_id=$(git describe --tags --always --dirty)
 image_tag="${branch}-${commit_id}"
 repository=$(pwd | xargs dirname | xargs basename)
