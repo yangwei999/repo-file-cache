@@ -3,9 +3,8 @@ package dbmodels
 type DBErrCode string
 
 const (
-	ErrSystemError     DBErrCode = "system_error"
-	ErrNoDBRecord      DBErrCode = "no_db_record"
-	ErrInvalidFilePath DBErrCode = "invalid_file_path"
+	ErrSystemError DBErrCode = "system_error"
+	ErrNoDBRecord  DBErrCode = "no_db_record"
 )
 
 type IDBError interface {

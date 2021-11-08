@@ -11,17 +11,15 @@ import (
 	"github.com/opensourceways/repo-file-cache/dbmodels"
 )
 
+const rhForCurrentDir = "-rh_cd-"
+
 func dirToKey(s string) (string, dbmodels.IDBError) {
 	if s == dbmodels.FileCurrentDir {
 		return fieldFilesItem + dbmodels.FilePathSeparator, nil
 	}
 
 	if strings.Contains(s, dbmodels.FileCurrentDir) {
-		err := dbmodels.NewDBError(
-			dbmodels.ErrInvalidFilePath,
-			fmt.Errorf("file path contains '%s'", dbmodels.FileCurrentDir),
-		)
-		return "", err
+		s = strings.ReplaceAll(s, dbmodels.FileCurrentDir, rhForCurrentDir)
 	}
 
 	return fieldFilesItem + s, nil
@@ -30,6 +28,9 @@ func dirToKey(s string) (string, dbmodels.IDBError) {
 func fullPathOfFile(p, name string) string {
 	if p == dbmodels.FilePathSeparator {
 		return name
+	}
+	if strings.Contains(p, rhForCurrentDir) {
+		p = strings.ReplaceAll(p, rhForCurrentDir, dbmodels.FileCurrentDir)
 	}
 	return filepath.Join(p, name)
 }

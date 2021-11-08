@@ -20,7 +20,6 @@ func (fc *FileController) Prepare() {
 // @Failure 401 error_missing_input_param:  missing some input parameters
 // @Failure 402 error_has_same_file:        there are same files which are located in same path
 // @Failure 403 error_not_same_file:        the name of files to be stored is not same
-// @Failure 404 error_invalid_file_path:    the file path is invalid
 // @Failure 500 error_system_error:         system error
 // @router / [post]
 func (fc *FileController) Set() {

@@ -70,10 +70,6 @@ func (f FileUpdateOption) Update() IModelError {
 		return nil
 	}
 
-	if err.IsErrorOf(dbmodels.ErrInvalidFilePath) {
-		return ErrInvalidFilePath.toModelError()
-	}
-
 	return parseDBError(err)
 }
 

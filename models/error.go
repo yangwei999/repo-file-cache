@@ -21,12 +21,11 @@ func (e ModelErrCode) toModelError() IModelError {
 }
 
 const (
-	ErrSystemError     ModelErrCode = "error_system_error"
-	ErrUnknownDBError  ModelErrCode = "error_unknown_db_error"
-	ErrNotSameFile     ModelErrCode = "error_not_same_file"
-	ErrHasSameFile     ModelErrCode = "error_has_same_file"
-	ErrInvalidFilePath ModelErrCode = "error_invalid_file_path"
-	ErrMissingParam    ModelErrCode = "error_missing_input_param"
+	ErrSystemError    ModelErrCode = "error_system_error"
+	ErrUnknownDBError ModelErrCode = "error_unknown_db_error"
+	ErrNotSameFile    ModelErrCode = "error_not_same_file"
+	ErrHasSameFile    ModelErrCode = "error_has_same_file"
+	ErrMissingParam   ModelErrCode = "error_missing_input_param"
 )
 
 type modelError struct {
