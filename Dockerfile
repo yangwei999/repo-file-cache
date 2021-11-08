@@ -9,6 +9,7 @@ RUN cd /go/src/github.com/opensourceways/repo-file-cache && CGO_ENABLED=1 go bui
 # copy binary config and utils
 FROM golang:latest
 RUN  mkdir -p /opt/app/
+RUN  mkdir -p /opt/app/controllers
 COPY ./conf /opt/app/conf
 # overwrite config yaml
 COPY  --from=BUILDER /go/src/github.com/opensourceways/repo-file-cache/repo-file-cache /opt/app
