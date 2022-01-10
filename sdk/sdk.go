@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"path"
 	"strings"
 
 	"github.com/opensourceways/community-robot-lib/utils"
@@ -21,7 +20,7 @@ func NewSDK(endpoint string, maxRetries int) *SDK {
 	return &SDK{
 		hc:              &utils.HttpClient{MaxRetries: maxRetries},
 		endpoint:        endpoint,
-		summaryEndpoint: endpoint + "%s?summary=true",
+		summaryEndpoint: endpoint + "%s?branch=%s&summary=%t",
 	}
 }
 
@@ -31,8 +30,8 @@ type SDK struct {
 	summaryEndpoint string
 }
 
-func (cli *SDK) SaveFiles(opt *models.FileUpdateOption) error {
-	payload, err := utils.JsonMarshal(opt)
+func (cli *SDK) SaveFiles(opt models.FileUpdateOption) error {
+	payload, err := utils.JsonMarshal(&opt)
 	if err != nil {
 		return err
 	}
@@ -45,13 +44,7 @@ func (cli *SDK) SaveFiles(opt *models.FileUpdateOption) error {
 }
 
 func (cli *SDK) GetFiles(b models.Branch, fileName string, summary bool) (models.FilesInfo, error) {
-	endpoint := ""
-	if summary {
-		endpoint = fmt.Sprintf(cli.summaryEndpoint, genFilePath(b, fileName))
-	} else {
-		endpoint = cli.endpoint + genFilePath(b, fileName)
-	}
-
+	endpoint := fmt.Sprintf(cli.summaryEndpoint, fileName, models.BranchToKey(&b), summary)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return models.FilesInfo{}, err
@@ -68,15 +61,13 @@ func (cli *SDK) GetFiles(b models.Branch, fileName string, summary bool) (models
 	return v.Data, nil
 }
 
-func (cli *SDK) DeleteFiles(b models.Branch, fileName string, opt *models.FileDeleteOption) error {
-	payload, err := utils.JsonMarshal(opt)
+func (cli *SDK) DeleteFiles(opt models.FileDeleteOption) error {
+	payload, err := utils.JsonMarshal(&opt)
 	if err != nil {
 		return err
 	}
 
-	endpoint := cli.endpoint + genFilePath(b, fileName)
-
-	req, err := http.NewRequest(http.MethodDelete, endpoint, bytes.NewBuffer(payload))
+	req, err := http.NewRequest(http.MethodDelete, cli.endpoint, bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
@@ -89,8 +80,4 @@ func (cli *SDK) ForwardTo(req *http.Request, jsonResp interface{}) error {
 	req.Header.Set("User-Agent", "repo-file-cache-sdk")
 
 	return cli.hc.ForwardTo(req, jsonResp)
-}
-
-func genFilePath(b models.Branch, fileName string) string {
-	return path.Join(b.Platform, b.Org, b.Repo, b.Branch, fileName)
 }

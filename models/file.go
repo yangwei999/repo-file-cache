@@ -17,7 +17,7 @@ type FilesInfo struct {
 	Files     []File `json:"files" required:"true"`
 }
 
-func (f FilesInfo) validate() IModelError {
+func (f *FilesInfo) validate() IModelError {
 	if f.BranchSHA == "" {
 		return newMissingParam("branch_sha")
 	}
@@ -56,7 +56,7 @@ type FileUpdateOption struct {
 	FilesInfo
 }
 
-func (f FileUpdateOption) Validate() IModelError {
+func (f *FileUpdateOption) Validate() IModelError {
 	if k, b := f.Branch.IsMissingParam(); b {
 		return newMissingParam(k)
 	}
@@ -64,7 +64,7 @@ func (f FileUpdateOption) Validate() IModelError {
 	return f.FilesInfo.validate()
 }
 
-func (f FileUpdateOption) Update() IModelError {
+func (f *FileUpdateOption) Update() IModelError {
 	err := dbmodels.GetDB().UpdateFiles(&f.Branch, f.BranchSHA, f.Files)
 	if err == nil {
 		return nil
@@ -94,13 +94,20 @@ func GetFiles(b Branch, fileName string, summary bool) (FilesInfo, IModelError) 
 }
 
 type FileDeleteOption struct {
+	Branch
 	Files []FilePath `json:"files" required:"true"`
 }
 
-func (f FileDeleteOption) Validate(fileName string) IModelError {
+func (f *FileDeleteOption) Validate() IModelError {
+	if k, b := f.Branch.IsMissingParam(); b {
+		return newMissingParam(k)
+	}
+
 	if len(f.Files) == 0 {
 		return newMissingParam("files")
 	}
+
+	fileName := f.Files[0].Name()
 
 	for _, item := range f.Files {
 		if fileName != item.Name() {
@@ -111,8 +118,8 @@ func (f FileDeleteOption) Validate(fileName string) IModelError {
 	return nil
 }
 
-func (f FileDeleteOption) DeleteFiles(b Branch) IModelError {
-	err := dbmodels.GetDB().DeleteFiles(&b, f.Files)
+func (f *FileDeleteOption) DeleteFiles() IModelError {
+	err := dbmodels.GetDB().DeleteFiles(&f.Branch, f.Files)
 	if err == nil || err.IsErrorOf(dbmodels.ErrNoDBRecord) {
 		return nil
 	}

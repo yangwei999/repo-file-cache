@@ -18,18 +18,18 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/opensourceways/repo-file-cache/controllers:FileController"] = append(beego.GlobalControllerRouter["github.com/opensourceways/repo-file-cache/controllers:FileController"],
 		beego.ControllerComments{
-			Method:           "Get",
-			Router:           "/:platform/:org/:repo/:branch/:filename",
-			AllowHTTPMethods: []string{"get"},
+			Method:           "Delete",
+			Router:           "/",
+			AllowHTTPMethods: []string{"delete"},
 			MethodParams:     param.Make(),
 			Filters:          nil,
 			Params:           nil})
 
 	beego.GlobalControllerRouter["github.com/opensourceways/repo-file-cache/controllers:FileController"] = append(beego.GlobalControllerRouter["github.com/opensourceways/repo-file-cache/controllers:FileController"],
 		beego.ControllerComments{
-			Method:           "Delete",
-			Router:           "/:platform/:org/:repo/:branch/:filename",
-			AllowHTTPMethods: []string{"delete"},
+			Method:           "Get",
+			Router:           "/:filename",
+			AllowHTTPMethods: []string{"get"},
 			MethodParams:     param.Make(),
 			Filters:          nil,
 			Params:           nil})

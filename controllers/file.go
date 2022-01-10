@@ -49,15 +49,14 @@ func (fc *FileController) Set() {
 // @Success 200 {object} models.FilesInfo
 // @Failure 400 missing_url_path_parameter: missing url path parameter
 // @Failure 500 system_error:               system error
-// @router /:platform/:org/:repo/:branch/:filename [get]
+// @router /:filename [get]
 func (fc *FileController) Get() {
 	action := "list files"
 
-	b := models.Branch{
-		Platform: fc.GetString(":platform"),
-		Org:      fc.GetString(":org"),
-		Repo:     fc.GetString(":repo"),
-		Branch:   fc.GetString(":branch"),
+	b, merr := models.ParseBranch(fc.GetString("branch"))
+	if merr != nil {
+		fc.sendModelErrorAsResp(merr, action)
+		return
 	}
 
 	summary, _ := fc.GetBool("summary")
@@ -80,7 +79,7 @@ func (fc *FileController) Get() {
 // @Failure 402 error_missing_input_param:  missing some input parameters
 // @Failure 403 error_not_same_file:        the name of files to be stored is not same
 // @Failure 500 system_error:               system error
-// @router /:platform/:org/:repo/:branch/:filename [delete]
+// @router / [delete]
 func (fc *FileController) Delete() {
 	action := "delete files"
 
@@ -90,19 +89,7 @@ func (fc *FileController) Delete() {
 		return
 	}
 
-	if merr := input.Validate(fc.GetString(":filename")); merr != nil {
-		fc.sendModelErrorAsResp(merr, action)
-		return
-	}
-
-	b := models.Branch{
-		Platform: fc.GetString(":platform"),
-		Org:      fc.GetString(":org"),
-		Repo:     fc.GetString(":repo"),
-		Branch:   fc.GetString(":branch"),
-	}
-
-	if merr := input.DeleteFiles(b); merr != nil {
+	if merr := input.DeleteFiles(); merr != nil {
 		fc.sendModelErrorAsResp(merr, action)
 		return
 	}
