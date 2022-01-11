@@ -78,3 +78,7 @@ func (f FilePath) Name() string {
 func (f FilePath) Dir() string {
 	return filepath.Dir(filepath.Clean(string(f)))
 }
+
+func (f FilePath) FullPath() string {
+	return string(f)
+}

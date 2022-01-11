@@ -40,7 +40,7 @@ func (cli *SDK) SaveFiles(opt models.FileUpdateOption) error {
 	if err != nil {
 		return err
 	}
-	return cli.ForwardTo(req, nil)
+	return cli.forwardTo(req, nil)
 }
 
 func (cli *SDK) GetFiles(b models.Branch, fileName string, summary bool) (models.FilesInfo, error) {
@@ -54,7 +54,7 @@ func (cli *SDK) GetFiles(b models.Branch, fileName string, summary bool) (models
 		Data models.FilesInfo `json:"data"`
 	}
 
-	if err = cli.ForwardTo(req, &v); err != nil {
+	if err = cli.forwardTo(req, &v); err != nil {
 		return models.FilesInfo{}, err
 	}
 
@@ -71,10 +71,10 @@ func (cli *SDK) DeleteFiles(opt models.FileDeleteOption) error {
 	if err != nil {
 		return err
 	}
-	return cli.ForwardTo(req, nil)
+	return cli.forwardTo(req, nil)
 }
 
-func (cli *SDK) ForwardTo(req *http.Request, jsonResp interface{}) error {
+func (cli *SDK) forwardTo(req *http.Request, jsonResp interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "repo-file-cache-sdk")
