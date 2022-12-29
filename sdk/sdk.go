@@ -18,14 +18,14 @@ func NewSDK(endpoint string, maxRetries int) *SDK {
 	}
 
 	return &SDK{
-		hc:              &utils.HttpClient{MaxRetries: maxRetries},
+		hc:              utils.NewHttpClient(maxRetries),
 		endpoint:        endpoint,
 		summaryEndpoint: endpoint + "%s?branch=%s&summary=%t",
 	}
 }
 
 type SDK struct {
-	hc              *utils.HttpClient
+	hc              utils.HttpClient
 	endpoint        string
 	summaryEndpoint string
 }
@@ -40,6 +40,7 @@ func (cli *SDK) SaveFiles(opt models.FileUpdateOption) error {
 	if err != nil {
 		return err
 	}
+
 	return cli.forwardTo(req, nil)
 }
 
@@ -71,6 +72,7 @@ func (cli *SDK) DeleteFiles(opt models.FileDeleteOption) error {
 	if err != nil {
 		return err
 	}
+
 	return cli.forwardTo(req, nil)
 }
 
@@ -79,5 +81,7 @@ func (cli *SDK) forwardTo(req *http.Request, jsonResp interface{}) error {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "repo-file-cache-sdk")
 
-	return cli.hc.ForwardTo(req, jsonResp)
+	_, err := cli.hc.ForwardTo(req, jsonResp)
+
+	return err
 }
