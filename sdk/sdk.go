@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/opensourceways/community-robot-lib/utils"
+	"github.com/opensourceways/server-common-lib/utils"
 
 	"github.com/opensourceways/repo-file-cache/models"
 )

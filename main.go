@@ -7,7 +7,8 @@ import (
 
 	"github.com/beego/beego/v2/core/logs"
 	beego "github.com/beego/beego/v2/server/web"
-	"github.com/opensourceways/community-robot-lib/interrupts"
+	"github.com/opensourceways/server-common-lib/interrupts"
+
 	_ "github.com/opensourceways/repo-file-cache/routers"
 
 	"github.com/opensourceways/repo-file-cache/config"
